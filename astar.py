@@ -46,10 +46,14 @@ class Spot: #spot aka nodes or cubes
     def is_end(self):
         return self.color == PURPLE
 
-    def reset(self):
-        self.color == WHITE
 
     # now instead of just giving back the color, lets make spots change color
+
+    def reset(self):
+        self.color = WHITE
+
+    def make_start(self):
+        self.color = ORANGE
 
     def make_closed(self):
         self.color = RED
@@ -85,17 +89,94 @@ def h(p1, p2): # lets define the two points that will then be compared
 # now lets make a list that holds all the data of the grid
 def make_grid(rows, width):
     grid = []
-    gap = width // rows
+    gap = width // rows # width of entire grid // number of rows we have. decides the width of each of these cubes
     for i in range(rows):
         grid.append([])
         for j in range(rows):
-            spot = Spot(i, j, gap, rows)
+            spot = Spot(i, j, gap, rows) # pass in row, column, width, and total number of rows
             grid[i].append(spot)
 
     return grid
 
+def draw_grid(win, rows, width): # this will draw the grid lines
+    gap = width // rows
+    for i in range(rows):
+        pygame.draw.line(win, GREY, (0, i * gap), (width, i * gap)) # horizontal lines drawn (win, color, x&y starting position, x&y ending position)
+        for j in range(rows): # now lets flip the x and y values to get all the vertical lines
+            pygame.draw.line(win, GREY, (j * gap, 0), (j * gap, width))
 
+def draw(win, grid, rows, width):
+    win.fill(WHITE)
 
+    for row in grid:
+        for spot in row:
+            spot.draw(win)
+
+    draw_grid(win, rows, width)
+    pygame.display.update()
+
+# now create a function that figures out the mouse position and which spot/square it is clicking on
+def get_clicked_pos(pos, rows, width): # pos is the mouse position
+    gap = width // rows
+    y, x = pos
+
+    row = y // gap
+    col = x // gap 
     
+    return row, col
+
+
+def main(win, width): # win meaning window
+    ROWS = 50
+    grid = make_grid(ROWS, width)
+
+    start = None
+    end = None
+
+    run = True
+    started = False
+
+    while run: # if we press the x button at the top corner of the screen, the  pygame window is exited
+        draw(win, grid, ROWS, width)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+
+            if started:
+                continue # if the algorithm has started, make sure the user cannot change any obstacles other than quitting.
+
+            if pygame.mouse.get_pressed()[0]: # if left mouse button pressed, do:
+                pos = pygame.mouse.get_pos()
+                row, col = get_clicked_pos(pos, ROWS, width)
+                spot = grid[row][col]
+
+                if not start and spot != end:
+                    start = spot
+                    start.make_start() # make this position the starting position (orange)
+
+                elif not end and spot != start:
+                    end = spot
+                    end.make_end() # make this position the ending position (turquoise)
+
+                elif spot != end and spot != start:
+                    spot.make_barrier() # make this position a barrier (black)
+
+
+            elif pygame.mouse.get_pressed()[1]:  #if middle mouse button pressed, do nothing:
+                pass
+
+            elif pygame.mouse.get_pressed()[2]: # if right mouse button pressed, do nothing:
+                pos = pygame.mouse.get_pos()
+                row, col = get_clicked_pos(pos, ROWS, width)
+                spot = grid[row][col]
+                spot.reset()
+                if spot == start:
+                    start = None
+                elif spot == end:
+                    end = None
+
+    pygame.quit()
+
+main(WIN, WIDTH)
 
     
