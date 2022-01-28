@@ -109,7 +109,7 @@ def algorithm(draw, grid, start, end):
 # now lets make a list that holds all the data of the grid
 def make_grid(rows, width):
     grid = []
-    gap = width // rows # width of entire grid // number of rows we have. decides the width of each of these cubes
+    gagp = width // rows # width of entire grid // number of rows we have. decides the width of each of these cubes
     for i in range(rows):
         grid.append([])
         for j in range(rows):
