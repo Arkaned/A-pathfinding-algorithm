@@ -73,8 +73,20 @@ class Spot: #spot aka nodes or cubes
     def draw(self, win): # draw the color
         pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.width))
 
-    def update_neighbors(self, grid):
-        pass
+    def update_neighbors(self, grid): # neighbours of a square cannot be barriers/black (since barriers cannot be considered for the path)
+        self.neighbours = []
+        if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier(): # For going DOWN checking if row position is a lower number than the total number of rows, and if the row below your square is a barrier
+            self.neighbors.append(grid[self.row + 1][self.col]) # append that square to your list of neighbours.
+
+        if self.row > 0 and not grid[self.row - 1][self.col].is_barrier(): # For going UP
+            self.neighbors.append(grid[self.row - 1][self.col])
+
+        if self.col > 0 and not grid[self.row][self.col - 1].is_barrier(): # For going LEFT
+            self.neighbors.append(grid[self.row][self.col - 1])
+
+        if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier(): # for going RIGHT
+            self.neighbors.append(grid[self.row][self.col + 1])
+
 
     def __lt__(self, other): # lt stands for less than, we will use it to compare different spots to each other
         return False  # lets assume that the first spot is greater than the other spot
@@ -85,6 +97,14 @@ def h(p1, p2): # lets define the two points that will then be compared
     x1, y1 = p1
     x2, y2 = p2
     return abs(x1 - x2) + abs(y1 - y2) # abs meaning absolute number
+
+def algorithm(draw, grid, start, end):
+    count = 0
+    open_set = PriorityQueue()
+    open_set.put((0, count, start))
+    came_from = {}
+    g_score = {spot: float("inf") for row in grid for spot in row}
+    g_score[start] = 0
 
 # now lets make a list that holds all the data of the grid
 def make_grid(rows, width):
@@ -174,6 +194,16 @@ def main(win, width): # win meaning window
                     start = None
                 elif spot == end:
                     end = None
+
+            # now lets start writing the algorithm since the visualization tool is ready:
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE and not started:
+                    for row in grid:
+                        for spot in row:
+                            spot.update_neighbors()
+
+                    algorithm(lambda: draw(win, grid, ROWS, width), grid, start, end)
 
     pygame.quit()
 
